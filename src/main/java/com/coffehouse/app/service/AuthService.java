@@ -15,7 +15,9 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 
-import static com.coffehouse.app.model.User.Role.USER;
+import java.util.Iterator;
+
+import static com.coffehouse.app.model.User.Role.CUSTOMER;
 
 
 @Service
@@ -27,12 +29,12 @@ public class AuthService {
 
     public boolean signUp(UserDTO userData) {
 
-        User user = new User(userData.getUsername(), passwordEncoder.encode(userData.getPassword()), USER);
+        User user = new User(userData.getName(), userData.getUsername(), passwordEncoder.encode(userData.getPassword()), CUSTOMER, true);
 
         return userService.create(user);
     }
 
-    public boolean signIn(UserDTO userData, HttpServletRequest request, HttpServletResponse response) {
+    public String signIn(UserDTO userData, HttpServletRequest request, HttpServletResponse response) {
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 userData.getUsername(), userData.getPassword());
@@ -40,14 +42,14 @@ public class AuthService {
         try {
             authentication = authenticationManager.authenticate(token);
         }catch (AuthenticationException e){
-            return false;
+            return e.getMessage();
         }
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         securityContextRepository.saveContext(context, request, response);
 
-        return true;
+        return "Signed in successfully";
     }
 
     public AuthService(PasswordEncoder passwordEncoder, UserService userService,

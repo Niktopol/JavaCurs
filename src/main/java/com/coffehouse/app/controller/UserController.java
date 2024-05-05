@@ -3,7 +3,8 @@ package com.coffehouse.app.controller;
 import org.springframework.web.bind.annotation.*;
 
 //@AllArgsConstructor
-@RestController("/")
+@RestController
+@RequestMapping("/")
 public class UserController {
     @GetMapping
     public String hello(){

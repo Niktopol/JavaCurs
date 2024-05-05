@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "users")
 public class User implements UserDetails {
     public enum Role{
-        USER,
+        CUSTOMER,
         WORKER,
         ADMIN
     }
@@ -26,6 +26,9 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String name;
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -37,6 +40,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -66,12 +71,14 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
-    public User(String username, String password, Role role) {
+    public User(String name, String username, String password, Role role, boolean enabled) {
+        this.name = name;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.enabled = enabled;
     }
 }

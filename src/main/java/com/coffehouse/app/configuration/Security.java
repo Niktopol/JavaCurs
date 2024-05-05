@@ -2,9 +2,13 @@ package com.coffehouse.app.configuration;
 
 
 import com.coffehouse.app.service.UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -14,11 +18,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.io.IOException;
 import java.util.List;
 
 @AllArgsConstructor
@@ -66,7 +73,15 @@ public class Security {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .logout(logout ->
-                        logout.logoutUrl("/auth/logout").logoutSuccessUrl("/").invalidateHttpSession(true));
+                        logout.logoutUrl("/auth/logout").logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+                            if(authentication != null && authentication.isAuthenticated()){
+                                response.getWriter().write("Logged out successfully");
+                            }else{
+                                response.getWriter().write("You are not logged in");
+                            }
+                        }).invalidateHttpSession(true));
 
         return http.build();
     }
