@@ -5,6 +5,7 @@ import com.coffehouse.app.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -14,16 +15,22 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public String signUp(@RequestBody UserDTO userData){
-        if(authService.signUp(userData)){
-            return "User created";
+    public ResponseEntity<String> signUp(@RequestBody UserDTO userData){
+        String resp = authService.signUp(userData);
+        if(resp.isEmpty()){
+            return ResponseEntity.status(HttpServletResponse.SC_CREATED).body("User created");
         }else{
-            return "User exists";
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(resp);
         }
     }
 
     @PostMapping("/signin")
-    public String signIn(@RequestBody UserDTO userData, HttpServletRequest request, HttpServletResponse response){
-        return authService.signIn(userData, request, response);
+    public ResponseEntity<String> signIn(@RequestBody UserDTO userData, HttpServletRequest request, HttpServletResponse response){
+        String resp = authService.signIn(userData, request, response);
+        if(resp.isEmpty()){
+            return ResponseEntity.ok("Signed in successfully");
+        }else{
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(resp);
+        }
     }
 }

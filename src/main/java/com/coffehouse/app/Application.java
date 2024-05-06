@@ -1,6 +1,9 @@
 package com.coffehouse.app;
 
+import com.coffehouse.app.model.MenuPosition;
+import com.coffehouse.app.model.MenuPosition.MenuPositions;
 import com.coffehouse.app.model.User;
+import com.coffehouse.app.repository.MenuPositionRepository;
 import com.coffehouse.app.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
@@ -10,8 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.Session;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.Random;
 
 import static com.coffehouse.app.model.User.Role.ADMIN;
@@ -22,6 +23,7 @@ public class Application {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
+	private final MenuPositionRepository menuPositionRepository;
 
 	@PostConstruct
 	public void initAdmin(){
@@ -41,8 +43,15 @@ public class Application {
 			sessionRepository.deleteById(i.getId());
 		}
 	}
+
+	@PostConstruct
+	public void initMenuPositions(){
+		for(MenuPositions pos: MenuPositions.values()){
+			menuPositionRepository.save(new MenuPosition(pos.getId(), pos.getName(), pos.getPrice()));
+		}
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
 }

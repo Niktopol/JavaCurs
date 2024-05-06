@@ -23,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
@@ -58,6 +60,11 @@ public class Security {
     }
 
     @Bean
+    public SecurityContextRepository securityContextRepository(){
+        return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
@@ -69,16 +76,21 @@ public class Security {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request ->
-                        request.requestMatchers("/auth/signin", "/auth/signup").anonymous().anyRequest().authenticated())
+                        request.requestMatchers("/auth/signin", "/auth/signup").anonymous()
+                                .requestMatchers("/user/**").hasAuthority("CUSTOMER")
+                                .requestMatchers("/worker/**").hasAuthority("WORKER")
+                                .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                                .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .logout(logout ->
                         logout.logoutUrl("/auth/logout").logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
                             response.setContentType(MediaType.TEXT_PLAIN_VALUE);
                             if(authentication != null && authentication.isAuthenticated()){
+                                response.setStatus(HttpServletResponse.SC_OK);
                                 response.getWriter().write("Logged out successfully");
                             }else{
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                                 response.getWriter().write("You are not logged in");
                             }
                         }).invalidateHttpSession(true));
