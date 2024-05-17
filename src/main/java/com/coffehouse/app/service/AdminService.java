@@ -73,6 +73,9 @@ public class AdminService {
             }else{
                 User worker = userRepository.findByRoleAndUsername(WORKER, workerData.getUsername()).orElse(null);
                 if(worker != null){
+                    for (Session i: sessionRepository.findByPrincipalName(worker.getUsername()).values()){
+                        sessionRepository.deleteById(i.getId());
+                    }
                     userRepository.delete(worker);
                     return "";
                 }else{

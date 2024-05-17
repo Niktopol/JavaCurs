@@ -89,12 +89,12 @@ public class UserService {
     }
 
     public List<Order> getActiveOrders(){
-        return orderRepository.findAllByClosedTrueAndCustomer(userRepository.findByUsername(
+        return orderRepository.findAllByClosedFalseAndCustomer(userRepository.findByUsername(
                 SecurityContextHolder.getContext().getAuthentication().getName()).get());
     }
 
     public List<Order> getInactiveOrders(){
-        return orderRepository.findAllByClosedFalseAndCustomer(userRepository.findByUsername(
+        return orderRepository.findAllByClosedTrueAndCustomer(userRepository.findByUsername(
                 SecurityContextHolder.getContext().getAuthentication().getName()).get());
     }
 
